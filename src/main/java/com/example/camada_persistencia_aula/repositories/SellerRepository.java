@@ -41,7 +41,6 @@ public class SellerRepository {
                 seller.setBirthDate(result.getDate("BirthDate").toLocalDate());
                 seller.setBaseSalary(result.getDouble("BaseSalary"));
 
-
                 sellers.add(seller);
             }
 
