@@ -9,7 +9,7 @@ public class Seller {
     private String email;
     private LocalDate birthDate;
     private Double BaseSalary;
-    //private Department department;
+    private Department department;
     
     public Integer getId() {
         return Id;
@@ -51,10 +51,18 @@ public class Seller {
         BaseSalary = baseSalary;
     }
 
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
     @Override
     public String toString() {
-        return "Seller [getId()=" + getId() + ", getName()=" + getName() + ", getEmail()=" + getEmail()
-                + ", getBirthDate()=" + getBirthDate() + ", getBaseSalary()=" + getBaseSalary() + "]";
+        return "Seller [Id=" + Id + ", name=" + name + ", email=" + email + ", birthDate=" + birthDate + ", BaseSalary="
+                + BaseSalary + ", department=" + department + "]";
     }
 
 }
