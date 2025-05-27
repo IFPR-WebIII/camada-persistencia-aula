@@ -72,12 +72,28 @@ public class SellerRepository {
         ResultSet result = null;
 
         try {
-
             statement = connection.prepareStatement("select seller.*, department.Name as DepartmentName " +
                     "from seller " +
                     "join department " +
                     "on seller.DepartmentId = department.Id " +
-                    "where department.id = " + departmentId);
+                    "where department.id = ?");
+
+            statement.setInt(1, departmentId);
+            result = statement.executeQuery();
+            
+            Map<Integer, Department> mapDepartments = new HashMap<>();
+
+            while (result.next()) {
+
+                Department department = mapDepartments.get(result.getInt("DepartmentId"));
+
+                if (department == null) {
+                    department = instantiateDepartment(result);
+                    mapDepartments.put(result.getInt("DepartmentId"), department);
+                }
+
+                Seller seller = instantiateSeller(result, department);
+            }
             
         } catch (Exception e) {
             // TODO: handle exception
