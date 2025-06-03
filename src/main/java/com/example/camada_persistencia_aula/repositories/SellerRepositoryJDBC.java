@@ -11,11 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Repository;
+
 import com.example.camada_persistencia_aula.connection.ConnectionFactory;
 import com.example.camada_persistencia_aula.exceptions.DatabaseException;
 import com.example.camada_persistencia_aula.models.Department;
 import com.example.camada_persistencia_aula.models.Seller;
 
+@Repository
 public class SellerRepositoryJDBC implements SellerRepository {
 
     private Connection connection;
@@ -109,7 +112,6 @@ public class SellerRepositoryJDBC implements SellerRepository {
         return sellers;
 
     }
-
 
     public Department instantiateDepartment(ResultSet result) throws SQLException {
 

@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.example.camada_persistencia_aula.exceptions.DatabaseException;
 import com.example.camada_persistencia_aula.models.Department;
 import com.example.camada_persistencia_aula.models.Seller;
 import com.example.camada_persistencia_aula.repositories.SellerRepository;
@@ -94,5 +95,4 @@ public class ConnectionFactoryTeste {
         assertThat(result).isNotNull();
     }
 
-    
 }
