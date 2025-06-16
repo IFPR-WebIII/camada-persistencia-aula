@@ -22,23 +22,24 @@ import com.example.camada_persistencia_aula.repositories.SellerRepositoryJDBC;
 public class ConnectionFactoryTeste {
 
     @Test
-    public void deveConectarAoBanco() throws SQLException{
+    public void deveConectarAoBanco() throws SQLException {
 
         // Realiza a conexão
         Connection connection = ConnectionFactory.getConnection();
 
-        //Objeto, que executa as operações do banco de dados
+        // Objeto, que executa as operações do banco de dados
         Statement statement = connection.createStatement();
-        
-        //ResultSet é um objeto que de forma intermediária, recebe os dados em formado de tabela do banco
+
+        // ResultSet é um objeto que de forma intermediária, recebe os dados em formado
+        // de tabela do banco
         ResultSet result = statement.executeQuery("select * from seller");
 
-        //result.getInt(1);
-        //result.getInt("Id");
+        // result.getInt(1);
+        // result.getInt("Id");
 
-        //result.getString(2);
-        //result.getString("Name");
-        
+        // result.getString(2);
+        // result.getString("Name");
+
         result.next();
         System.out.println("Id: " + result.getInt("Id") + " name: " + result.getString("Name"));
 
@@ -47,7 +48,7 @@ public class ConnectionFactoryTeste {
     }
 
     @Test
-    public void deveRetornarUmaListaDeSellers(){
+    public void deveRetornarUmaListaDeSellers() {
 
         SellerRepositoryJDBC repository = new SellerRepositoryJDBC();
 
@@ -62,7 +63,7 @@ public class ConnectionFactoryTeste {
     }
 
     @Test
-    public void deveRetornarUmaListaDeSellersPorDepartamento(){
+    public void deveRetornarUmaListaDeSellersPorDepartamento() {
 
         SellerRepository repository = new SellerRepositoryJDBC();
 
@@ -77,7 +78,7 @@ public class ConnectionFactoryTeste {
     }
 
     @Test
-    public void deveInserirUmSellerComSucesso(){
+    public void deveInserirUmSellerComSucesso() {
         SellerRepository repository = new SellerRepositoryJDBC();
 
         Department department = new Department();
@@ -93,6 +94,58 @@ public class ConnectionFactoryTeste {
         Seller result = repository.insert(s1);
 
         assertThat(result).isNotNull();
+    }
+
+    @Test
+    public void deveExecutarOperacoesDeFormaAtomica() {
+
+        SellerRepository repository = new SellerRepositoryJDBC();
+        Connection connection = ConnectionFactory.getConnection();
+
+        Department department = new Department();
+        department.setId(1);
+
+        Seller s1 = new Seller();
+        s1.setName("Carl");
+        s1.setEmail("carl@gmail.com");
+        s1.setBirthDate(LocalDate.of(1985, 01, 01));
+        s1.setBaseSalary(1000.0);
+        s1.setDepartment(department);
+
+        Seller s2 = new Seller();
+        s2.setName("Joe");
+        s2.setEmail("joe@gmail.com");
+        s2.setBirthDate(LocalDate.of(1960, 01, 01));
+        s2.setBaseSalary(3000.0);
+        s2.setDepartment(department);
+
+        assertThatThrownBy(()-> {
+        try {
+
+            // Transaction
+            connection.setAutoCommit(false);
+
+            repository.insert(s1);
+
+            if (true) {
+               throw new DatabaseException("houve um problema durante a inserção");
+            }
+
+            repository.insert(s2);
+
+            connection.commit();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                throw new DatabaseException("Não foi possível executar o rollback");
+            }
+        }
+
+    }).isInstanceOf(DatabaseException.class)
+    .hasMessageContaining("houve um problema");
+
+
     }
 
 }

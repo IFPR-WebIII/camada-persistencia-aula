@@ -2,13 +2,24 @@ package com.example.camada_persistencia_aula.models;
 
 import java.time.LocalDate;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.ManyToOne;
+
+@Entity
 public class Seller {
 
+    @jakarta.persistence.Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer Id;
+
     private String name;
     private String email;
     private LocalDate birthDate;
     private Double BaseSalary;
+
+    @ManyToOne
     private Department department;
     
     public Integer getId() {
