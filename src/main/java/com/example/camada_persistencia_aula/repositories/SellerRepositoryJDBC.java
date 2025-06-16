@@ -59,7 +59,7 @@ public class SellerRepositoryJDBC implements SellerRepository {
             }
 
         } catch (SQLException e) {
-            throw new DatabaseException("não foi possível criar um Statment");
+            throw new DatabaseException("problemas com a conexão: " + e.getMessage());
         } finally {
             ConnectionFactory.closeSResultSet(result);
             ConnectionFactory.closeStatament(statement);
@@ -113,27 +113,35 @@ public class SellerRepositoryJDBC implements SellerRepository {
 
     }
 
-    public Department instantiateDepartment(ResultSet result) throws SQLException {
+    @Override
+    public Seller getById(Integer id) {
+        PreparedStatement statement = null;
+        ResultSet result = null;
 
-        Department department = new Department();
-        department.setId(result.getInt("DepartmentId"));
-        department.setName(result.getString("DepartmentName"));
+        try {
+            statement = connection.prepareStatement(
+                "select seller.*, department.Name as DepartmentName " +
+                "from seller " +
+                "join department on seller.DepartmentId = department.Id " +
+                "where seller.Id = ?"
+            );
 
-        return department;
-    }
+            statement.setInt(1, id);
+            result = statement.executeQuery();
 
-    public Seller instantiateSeller(ResultSet result, Department department) throws SQLException {
+            if (result.next()) {
+                Department department = instantiateDepartment(result);
+                return instantiateSeller(result, department);
+            }
+
+            return null;
         
-        Seller seller = new Seller();
-
-        seller.setId(result.getInt("Id"));
-        seller.setName(result.getString("Name"));
-        seller.setEmail(result.getString("Email"));
-        seller.setBirthDate(result.getDate("BirthDate").toLocalDate());
-        seller.setBaseSalary(result.getDouble("BaseSalary"));
-        seller.setDepartment(department);
-
-        return seller;
+        } catch (SQLException e) {
+            throw new DatabaseException("problemas com a conexão: " + e.getMessage());
+        } finally {
+            ConnectionFactory.closeSResultSet(result);
+            ConnectionFactory.closeStatament(statement);
+        }
 
     }
 
@@ -165,8 +173,37 @@ public class SellerRepositoryJDBC implements SellerRepository {
             seller.setId(ids.getInt(1));
        
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+
+        return seller;
+    }
+
+    @Override
+    public Seller update(Seller seller) {
+        
+        PreparedStatement statement = null;
+
+        try {
+            String sql = "UPDATE seller SET Name = ?, Email = ?, BirthDate = ?, BaseSalary = ?, DepartmentId = ? WHERE Id = ?";
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, seller.getName());
+            statement.setString(2, seller.getEmail());
+            statement.setDate(3, Date.valueOf(seller.getBirthDate()));
+            statement.setDouble(4, seller.getBaseSalary());
+            statement.setInt(5, seller.getDepartment().getId());
+            statement.setInt(6, seller.getId());
+
+            int rowsAffected = statement.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new DatabaseException("Seller not updated");
+            }
+
+        } catch (SQLException e) {
+            throw new DatabaseException("problemas com a conexão: " + e.getMessage());
+        } finally {
+            ConnectionFactory.closeStatament(statement);
         }
 
         return seller;
@@ -174,15 +211,52 @@ public class SellerRepositoryJDBC implements SellerRepository {
     }
 
     @Override
-    public Seller update(Seller seller) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    public void deleteById(Integer id) {
+        PreparedStatement statement = null;
+
+        try {
+            String sql = "DELETE FROM seller WHERE Id = ?";
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, id);
+
+            int rowsAffected = statement.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new DatabaseException("Seller not found or not deleted");
+            }
+
+        } catch (SQLException e) {
+            throw new DatabaseException("problemas com a conexão: " + e.getMessage());
+        } finally {
+            ConnectionFactory.closeStatament(statement);
+        }
     }
 
-    @Override
-    public void delete(Integer id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+
+    // Métodos auxiliarres
+    
+    public Department instantiateDepartment(ResultSet result) throws SQLException {
+
+        Department department = new Department();
+        department.setId(result.getInt("DepartmentId"));
+        department.setName(result.getString("DepartmentName"));
+
+        return department;
+    }
+
+    public Seller instantiateSeller(ResultSet result, Department department) throws SQLException {
+        
+        Seller seller = new Seller();
+
+        seller.setId(result.getInt("Id"));
+        seller.setName(result.getString("Name"));
+        seller.setEmail(result.getString("Email"));
+        seller.setBirthDate(result.getDate("BirthDate").toLocalDate());
+        seller.setBaseSalary(result.getDouble("BaseSalary"));
+        seller.setDepartment(department);
+
+        return seller;
+
     }
 
 }
